@@ -1,0 +1,62 @@
+#!/bin/bash
+
+if [ -z "$1" ]; then
+    echo "Usage: $0 <host-directory>" >&2
+    exit 1
+fi
+
+# fail when accessing undefined vars
+set -eu
+
+if [ ! -d "$1" ]; then
+    echo "Error: no workdir '$1'" >&2
+    exit 1
+fi
+# Resolve to absolute path (POSIX-compatible)
+WORK_FROM=$(cd "$1" && pwd)
+
+# Fail without config
+CONF_FROM=$(cd "${HOME}/.config/opencode/" && pwd)
+if [ ! -d "$CONF_FROM" ]; then
+    echo "Error: no config directory '$CONF_FROM'" >&2
+    exit 1
+fi
+
+# Fail without .m2 folder
+M2_FROM=$(cd "${HOME}/.m2/" && pwd)
+if [ ! -d "$M2_FROM" ]; then
+    echo "Error: no .m2 directory '$M2_FROM'" >&2
+    exit 1
+fi
+
+CONF_DEST="/root/.config/opencode"
+M2_DEST="/root/.m2/"
+WORK_DEST="/workdir"
+
+echo "### Starting opencode.ai in a container ###"
+echo ""
+echo "Mounting folders ..."
+echo "- $CONF_FROM -> $CONF_DEST"
+echo "- $M2_FROM -> $M2_DEST"
+echo "- $WORK_FROM -> $WORK_DEST"
+echo ""
+
+# Confirm existence of expecetd share/state folders
+OC_STATE=${WORK_FROM}/.myopencode/state
+if [ ! -d "$OC_STATE" ]; then
+    echo "Creating $OC_STATE ..."
+    mkdir -p "$OC_STATE"
+fi
+OC_SHARE=${WORK_FROM}/.myopencode/share
+if [ ! -d "$OC_SHARE" ]; then
+    echo "Creating $OC_SHARE ..."
+    mkdir -p "$OC_SHARE"
+fi
+
+#    --entrypoint bash \
+docker run -it --rm \
+	-v $CONF_FROM:$CONF_DEST \
+	-v $M2_FROM:$M2_DEST \
+	-v $WORK_FROM:$WORK_DEST \
+    myopencode  
+
