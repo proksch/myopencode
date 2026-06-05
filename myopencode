@@ -55,8 +55,8 @@ fi
 
 #    --entrypoint bash \
 docker run -it --rm \
-	-v $CONF_FROM:$CONF_DEST \
-	-v $M2_FROM:$M2_DEST \
-	-v $WORK_FROM:$WORK_DEST \
+	-v "$CONF_FROM":"$CONF_DEST" \
+	-v "$M2_FROM":"$M2_DEST" \
+	-v "$WORK_FROM":"$WORK_DEST" \
     myopencode  
 
