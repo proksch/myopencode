@@ -88,4 +88,45 @@ The `.myopencode/` directory stores opencode data that persists between containe
 This means your conversations, configured model, and settings carry over from one session to the next. The directory is git-ignored by default so it does not clutter your repository.
 
 
+### Configuration
 
+The official opencode documentation covers the [configuration details](https://opencode.ai/docs/config/), like [Providers and API keys](https://opencode.ai/docs/providers/)
+
+The container reads your configuration from `~/.config/opencode/` on the host, which is mounted into the container.
+This means you configure opencode once on your host and it works inside the container without any changes.
+
+In practice, you usually need to configure three things:
+
+- Configure a provider
+- Configure models (which ones are visible / used)
+- Authenticate (usually easiest to reference files that hold the API keys)
+
+A minimal `opencode.json`  that connects to [OpenRouter](https://openrouter.ai), whitelists certain models (so not all are shown through `/models`), and picks a default model looks like:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "model": "openrouter/deepseek/deepseek-v4-pro",
+  "agent": {
+    "plan": { "model": "openrouter/deepseek/deepseek-v4-pro" },
+    "build": { "model": "openrouter/deepseek/deepseek-v4-pro" }
+  },
+
+  "provider": {
+    "openrouter": {
+      "base_url": "https://openrouter.ai/api/v1",
+      "whitelist": [
+        "deepseek/deepseek-v4-pro",
+        "... you can add others here ..."
+      ],
+      "options": {
+        "apiKey": "{file:~/.config/opencode/keys/openrouter.key}"
+      }
+    }
+  },
+  "enabled_providers": ["openrouter"]
+}
+```
+
+*Note:* Make sure that the file with the API token exists.
